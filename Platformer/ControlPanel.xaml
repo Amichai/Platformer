@@ -1,0 +1,52 @@
+﻿<Window x:Class="Platformer.ControlPanel"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ControlPanel" Height="300" Width="600" Closing="Window_Closing">
+    <StackPanel Orientation="Horizontal">
+        <StackPanel>
+            <TextBlock Text="Actions" />
+            <StackPanel Orientation="Vertical">
+                <Button Click="Reset_Click" Width="100" HorizontalAlignment="Left" Margin="5">Reset</Button>
+                <Button Click="Start_Click" Width="100" HorizontalAlignment="Left" Margin="5">Start</Button>
+                <Button Click="Save_Click" Width="100" HorizontalAlignment="Left" Margin="5">Save</Button>
+                <Button Click="Open_Click"  Width="100" HorizontalAlignment="Left" Margin="5">Open</Button>
+            </StackPanel>
+        </StackPanel>
+        <StackPanel>
+            <TextBlock Text="All Sprites"></TextBlock>
+            <ListBox Name="allSprites">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <Rectangle Fill="{Binding Brush}" Width="20" Height="20"></Rectangle>
+                            <TextBlock Text="{Binding Name}"></TextBlock>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </StackPanel>
+        <StackPanel>
+            <TextBlock Text="Broard State" />
+            <StackPanel Orientation="Vertical" Name="boardStatePanel">
+                <TextBlock>Current game time:<Run Text="{Binding GameTime}" /></TextBlock>
+                <TextBlock>All living sprites:</TextBlock>
+                <ListBox Name="livingSprites">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Rectangle Fill="{Binding Brush}" Width="20" Height="20"></Rectangle>
+                                <TextBlock Text="{Binding Name}"></TextBlock>
+                                <StackPanel Orientation="Vertical">
+                                    <TextBlock>Position: (<Run Text="{Binding State.X}"/><Run Text=","/> <Run Text="{Binding State.Y}"/><Run Text=")"/></TextBlock>
+                                    <TextBlock>Velocity: (<Run Text="{Binding State.Vx}"/><Run Text=","/> <Run Text="{Binding State.Vy}"/><Run Text=")"/></TextBlock>
+                                    <TextBlock>Acceleration: (<Run Text="{Binding State.Ax}"/><Run Text=","/> <Run Text="{Binding State.Ay}"/><Run Text=")"/></TextBlock>
+                                </StackPanel>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <TextBlock>Frames Per Second:</TextBlock>
+            </StackPanel>
+        </StackPanel>
+    </StackPanel>
+</Window>
