@@ -20,12 +20,11 @@ namespace Platformer {
         }
 
         public double ScreenX() {
-
-            throw new NotImplementedException();
+            return GameInstance.Inst.GamePerspective.ScreenX(this.State.X);
         }
 
         public double ScreenY() {
-            throw new NotImplementedException();
+            return GameInstance.Inst.GamePerspective.ScreenY(this.State.Y);
         }
 
         public double Left {

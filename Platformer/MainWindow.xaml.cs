@@ -35,8 +35,8 @@ namespace Platformer {
         }
 
         void cp_NewGameLoaded(object sender, EventArgs e) {
-            this.Width = Instance.BoardWidth;
-            this.Height = Instance.BoardHeight;
+            this.Width = Instance.GamePerspective.ScreenWidth;
+            this.Height = Instance.GamePerspective.ScreenHeight;
             Instance.Reset();
         }
 
@@ -53,8 +53,8 @@ namespace Platformer {
                     Fill = a.Brush,
                     Tag = a
                 };
-                Canvas.SetLeft(newRectangle, a.State.X);
-                Canvas.SetLeft(newRectangle, a.State.Y);
+                Canvas.SetTop(newRectangle, a.ScreenY());
+                Canvas.SetLeft(newRectangle, a.ScreenX());
                 newRectangle.MouseRightButtonDown += newRectangle_MouseRightButtonDown;
                 this.canvas.Children.Add(newRectangle);
                 if (this.cp != null) {
@@ -87,10 +87,8 @@ namespace Platformer {
             foreach (Rectangle a in this.canvas.Children) {
                 a.Height = (a.Tag as Sprite).Height;
                 a.Width = (a.Tag as Sprite).Width;
-                Canvas.SetLeft(a, (a.Tag as Sprite).State.X);
-                Canvas.SetTop(a, (a.Tag as Sprite).State.Y);
-                //Canvas.SetLeft(a, (a.Tag as Sprite).ScreenY());
-                //Canvas.SetTop(a, (a.Tag as Sprite).ScreenX());
+                Canvas.SetLeft(a, (a.Tag as Sprite).ScreenX());
+                Canvas.SetTop(a, (a.Tag as Sprite).ScreenY());
             }
         }
 
@@ -122,7 +120,7 @@ namespace Platformer {
         }
 
         private void Window_SizeChanged_1(object sender, SizeChangedEventArgs e) {
-            this.Instance.SetBoardSize(e.NewSize.Width, e.NewSize.Height);
+            this.Instance.SetBoardSize((int)Math.Round(e.NewSize.Width), (int)Math.Round(e.NewSize.Height));
         }
 
         private void Window_KeyDown_1(object sender, KeyEventArgs e) {

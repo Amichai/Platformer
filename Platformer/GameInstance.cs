@@ -13,12 +13,10 @@ using System.Windows.Threading;
 using System.Xml.Linq;
 
 namespace Platformer {
-    ///Manages assets, sprites, boards, physics, etc
+    ///Manages assets, sprites, boards, physics, etclt6
     ///
     public class GameInstance : INotifyPropertyChanged {
         private GameInstance() {
-            this.BoardWidth = 1000;
-            this.BoardHeight = 1000;
             this.allSprites = new ObservableCollection<Sprite>();
             this.allSprites.CollectionChanged += allSprites_CollectionChanged;
             this.stopwatch = new Stopwatch();
@@ -29,7 +27,10 @@ namespace Platformer {
             this.Name = "NoName";
             this.initialSprites = new List<Sprite>();
             this.GamePerspective = new Perspective();
+
         }
+
+        public Perspective GamePerspective { get; set; }
 
         public TimeSpan GameTime {
             get { return _GameTime; }
@@ -97,13 +98,11 @@ namespace Platformer {
         Thread physicsThread;
         ThreadStart ts;
 
-        public double BoardWidth { get; set; }
-        public double BoardHeight { get; set; }
-
-        Perspective GamePerspective { get; set; }
+        //public double BoardWidth { get; set; }
+        //public double BoardHeight { get; set; }
 
         private bool isOffTheBoard(Sprite s) {
-            return (s.Right < 0 || s.Top > BoardHeight || s.Left > BoardWidth || s.Bottom < 0);
+            return GamePerspective.IsOffTheBoard(s);
         }
 
         public enum CollisionType { right, left, top, bottom, overlap, none }
@@ -156,6 +155,8 @@ namespace Platformer {
             if (isOffTheBoard(s)) {
                 s.RaiseOffTheBoard();
             }
+
+            ///We want to get rid of this element wise test
 
             ///Test for collision
             if (s.IsSolid) {
@@ -264,9 +265,9 @@ namespace Platformer {
 
         public event System.Collections.Specialized.NotifyCollectionChangedEventHandler  SpritesChanged;
 
-        public void SetBoardSize(double width, double height) {
-            this.BoardWidth = width;
-            this.BoardHeight = height;
+        public void SetBoardSize(int width, int height) {
+            this.GamePerspective.SetScreenSize(width, height);
+            this.GamePerspective.SetUniverseSize(width, height);
         }
 
         public event EventHandler TimeStarted;
@@ -314,8 +315,9 @@ namespace Platformer {
         public XElement Serialize() {
             XElement root = new XElement("GameInstance");
             root.Add(new XAttribute("Name", this.Name));
-            root.Add(new XAttribute("Width", this.BoardWidth));
-            root.Add(new XAttribute("Height", this.BoardHeight));
+            root.Add(this.GamePerspective.Serialize());
+            //root.Add(new XAttribute("Width", this.BoardWidth));
+            //root.Add(new XAttribute("Height", this.BoardHeight));
             foreach (var a in this.GetAllSprites()) {
                 root.Add(a.Serialize());
             }
@@ -326,14 +328,18 @@ namespace Platformer {
             ///Background image as well please
             var root = XElement.Load(filepath);
             this.Name = (string)root.Attribute("Name");
-            this.BoardWidth = double.Parse((string)root.Attribute("Width"));
-            this.BoardHeight = double.Parse((string)root.Attribute("Height"));
+            //this.BoardWidth = double.Parse((string)root.Attribute("Width"));
+            //this.BoardHeight = double.Parse((string)root.Attribute("Height"));
             if (this.allSprites != null) {
                 this.allSprites.Clear();
             }
             foreach (var a in root.Elements()) {
-                this.AddNewSprite(Sprite.Deserialize(a));
-                this.initialSprites.Add(Sprite.Deserialize(a));
+                if (a.Name == "Sprite") {
+                    this.AddNewSprite(Sprite.Deserialize(a));
+                    this.initialSprites.Add(Sprite.Deserialize(a));
+                } else if(a.Name == "Perspective"){
+                    this.GamePerspective = Perspective.Deserialize(a);
+                }
             }
         }
     }
