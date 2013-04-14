@@ -24,5 +24,55 @@ namespace Platformer {
 	        }
             return null;
         }
+
+        public static HashSet<T> RemoveAll<T>(this HashSet<T> list, IEnumerable<T> remove) {
+            foreach (var a in remove) {
+                list.Remove(a);
+            }
+            return list;
+        }
+
+        public static HashSet<T> AddRange<T>(this HashSet<T> list, IEnumerable<T> toAdd) {
+            foreach (var a in toAdd) {
+                list.Add(a);
+            }
+            return list;
+        }
+
+        public static HashSet<T> Overlap<T>(this IEnumerable<T> a, IEnumerable<T> b) {
+            IEnumerable<T> smaller, larger;
+            if (a.Count() < b.Count()) {
+                smaller = a;
+                larger = b;
+            } else {
+                smaller = b;
+                larger = a;
+            }
+            HashSet<T> toReturn = new HashSet<T>();
+            foreach (var e in smaller) {
+                if (larger.Contains(e)) {
+                    toReturn.Add(e);
+                }
+            }
+            return toReturn;
+        }
+
+        public static HashSet<T> MyUnion<T>(this HashSet<T> a, List<T> b) {
+            IEnumerable<T> smaller, larger;
+            if (a.Count() < b.Count()) {
+                smaller = a;
+                larger = b;
+            } else {
+                smaller = b;
+                larger = a;
+            }
+            HashSet<T> toReturn = new HashSet<T>();
+            foreach (var e in smaller) {
+                if (!toReturn.Contains(e)) {
+                    toReturn.Add(e);
+                }
+            }
+            return toReturn;
+        }
     }
 }

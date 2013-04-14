@@ -51,7 +51,7 @@ namespace Platformer {
             allSprites.Add(s3);
             this.allSprites.ItemsSource = allSprites;
             if (!string.IsNullOrWhiteSpace(Properties.Settings.Default.LastFilepath)) {
-                openFile(Properties.Settings.Default.LastFilepath);
+                ///openFile(Properties.Settings.Default.LastFilepath);
             }
             ///Create a list of sprites, bind these sprites to the control panel
             ///Allow point and click addition to the window

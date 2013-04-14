@@ -17,7 +17,12 @@ namespace Platformer {
             this.IsSolid = true;
             this.DestroyOffscreen = true;
             this.DeleteMe = false;
+            this.CreationIndex = indexCounter++;
         }
+
+        public int CreationIndex { get; set; }
+
+        static int indexCounter = 0;
 
         public double ScreenX() {
             return GameInstance.Inst.GamePerspective.ScreenX(this.State.X);
@@ -108,6 +113,7 @@ namespace Platformer {
             root.Add(new XAttribute("Brush", this.Brush));
             root.Add(new XAttribute("DestroyOffScreen", this.DestroyOffscreen));
             root.Add(new XAttribute("IsSolid", this.IsSolid));
+            root.Add(new XAttribute("CreationIndex", this.CreationIndex));
             root.Add(this.State.Serialize());
             return root;
         }
@@ -121,6 +127,7 @@ namespace Platformer {
             spr.Brush = new BrushConverter().ConvertFromString((string)root.Attribute("Brush")) as Brush;
             spr.DestroyOffscreen = bool.Parse((string)root.Attribute("DestroyOffScreen"));
             spr.IsSolid = bool.Parse((string)root.Attribute("IsSolid"));
+            spr.CreationIndex = indexCounter++;
             return spr;
         }
     }
