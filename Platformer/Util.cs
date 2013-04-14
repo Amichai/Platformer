@@ -54,6 +54,7 @@ namespace Platformer {
                     toReturn.Add(e);
                 }
             }
+
             return toReturn;
         }
 

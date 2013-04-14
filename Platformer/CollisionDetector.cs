@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -43,6 +44,7 @@ namespace Platformer {
             public void Update(int i, double newVal) {
                 double oldVal = edgePosition[i];
                 var dVal = newVal - oldVal;
+                if (Math.Abs(dVal) > 10) throw new Exception();
                 if (dVal == 0) return;
                 edgePosition[i] = newVal;
                 ///Check who we surpassed
@@ -125,10 +127,19 @@ namespace Platformer {
                 var index2 = insertionIndex(p2);
 
                 if (index1 == index2) return toReturn;
+                int startIdx, endIndex;
+                if (index1 < index2) {
+                    startIdx = index1;
+                    endIndex = index2;
+                } else {
+                    startIdx = index2;
+                    endIndex = index1;
+                }
                 ///If these indices aren't the same, we passed at least one val
-                for (int i = index1; i < index2; i++) {
+                for (int i = startIdx; i < endIndex; i++) {
                     toReturn.Add(orderedEdges[i]);
                 }
+                if (toReturn.Count() == 0) throw new Exception();
                 return toReturn;
             }
 
@@ -161,8 +172,10 @@ namespace Platformer {
 
         private HashSet<int> getIntersectingSprites(spriteEdge startEdge, spriteEdge endEdge, double startVal, double endVal) {
             HashSet<int> toReturn = new HashSet<int>();
-            toReturn = toReturn.AddRange(startEdge.SpritesWithinRange(startVal, endVal));
-            toReturn = toReturn.MyUnion(endEdge.SpritesWithinRange(startVal, endVal));
+            var startEdgesInRange = startEdge.SpritesWithinRange(startVal, endVal);
+            var endEdgesInRange = endEdge.SpritesWithinRange(startVal, endVal);
+            toReturn = toReturn.AddRange(startEdgesInRange);
+            toReturn = toReturn.AddRange(endEdgesInRange);
 
             ///We still haven't found the sprites that start before startVal and end after endVal
             var spritesStartingBeforeStartVal = startEdge.SpritesStartingBefore(startVal);
@@ -172,10 +185,89 @@ namespace Platformer {
             return toReturn;
         }
 
-        public void Update(int i, double x0, double y0, double x1, double y1) {
+        private double collionIn1D(double s1a, double s1b, double s2a, double s2b) {
+            Dictionary<string, double> horizEdges = new Dictionary<string, double>() {
+                {"l1", s1a},
+                {"r1", s1b},
+                {"l2", s2a},
+                {"r2", s2b},
+            };
+            var sorted = horizEdges.OrderBy(i => i.Value);
+            if (sorted.ElementAt(0).Key.Last() == sorted.ElementAt(1).Key.Last()) {
+                return 0;
+            } else {
+                return sorted.ElementAt(2).Value - sorted.ElementAt(1).Value;
+            }
+        }
+
+        private GameInstance.CollisionType collisionType(int sprite1, int sprite2) {
+            var s1Top = y0Edges.GetVal(sprite1);
+            var s1Bottom = y1Edges.GetVal(sprite1);
+            var s1Left = x0Edges.GetVal(sprite1);
+            var s1Right = x1Edges.GetVal(sprite1);
+            var s2Top = y0Edges.GetVal(sprite2);
+            var s2Bottom = y1Edges.GetVal(sprite2);
+            var s2Left = x0Edges.GetVal(sprite2);
+            var s2Right = x1Edges.GetVal(sprite2);
+            ///Sort four edges and test for arrangement
+            var horizCollision = collionIn1D(s1Left, s1Right, s2Left, s2Right);
+            var vertCollision = collionIn1D(s1Top, s1Bottom, s2Top, s2Bottom);
+
+            if (horizCollision == 0 || vertCollision == 0) {
+                return GameInstance.CollisionType.none;
+            }
+
+            if (vertCollision < horizCollision) {
+                //vert collision
+                if (s1Top < s2Top) {
+                    return GameInstance.CollisionType.bottom;
+                } else {
+                    return GameInstance.CollisionType.top;
+                }
+
+            }
+            if (horizCollision < vertCollision) {
+                //horiz collision
+                if (s1Left < s2Left) {
+                    return GameInstance.CollisionType.right;
+                } else {
+                    return GameInstance.CollisionType.left;
+                }
+            }
+            throw new Exception();
+            
+        }
+
+        private void addYcollisions(int i, List<int> vals) {
+            vals.Remove(i);
+            if (vals.Count() == 0) return;
+            spriteCollisionsY[i] = spriteCollisionsY[i].AddRange(vals);
+        }
+
+        private void removeYcollisions(int i, List<int> vals) {
+            vals.Remove(i);
+            if (vals.Count() == 0) return;
+            spriteCollisionsY[i] = spriteCollisionsY[i].RemoveAll(vals);
+        }
+
+        private void addXcollisions(int i, List<int> vals) {
+            vals.Remove(i);
+            if (vals.Count() == 0) return;
+            spriteCollisionsX[i] = spriteCollisionsX[i].AddRange(vals);
+        }
+
+        private void removeXcollisions(int i, List<int> vals) {
+            vals.Remove(i);
+            if (vals.Count() == 0) return;
+            spriteCollisionsX[i] = spriteCollisionsX[i].RemoveAll(vals);
+        }
+
+        public GameInstance.CollisionType Update_Slow(int i, double x0, double y0, double x1, double y1) {
+            spriteCollisionsX[i] = getXIntersectingSprites(x0, x1);
+            spriteCollisionsX[i].Remove(i);
+            spriteCollisionsY[i] = getYIntersectingSprites(y0, y1);
+            spriteCollisionsY[i].Remove(i);
             if (!knownIndices.Contains(i)) {
-                spriteCollisionsX[i] = getXIntersectingSprites(x0, x1);
-                spriteCollisionsY[i] = getYIntersectingSprites(y0, y1);
                 knownIndices.Add(i);
                 x0Edges.Add(i, x0);
                 y0Edges.Add(i, y0);
@@ -183,32 +275,80 @@ namespace Platformer {
                 y1Edges.Add(i, y1);
             }
 
-            ///Update x0 position
-
-            ///lost collisions in x
-            var expiredXCollisions = x1Edges.SpritesWithinRange(x0Edges.GetVal(i), x0);
-            spriteCollisionsX[i].RemoveAll(expiredXCollisions);
             x0Edges.Update(i, x0);
-
-            ///Lost collisions in y
-            var expiredYCollisions = y1Edges.SpritesWithinRange(y0Edges.GetVal(i), y0);
-            spriteCollisionsY[i].RemoveAll(expiredYCollisions);
-            y0Edges.Update(i, y0);
-
-            ///See if this x1 passes an x0 - check for new collisions
-            var newXCollisions = x0Edges.SpritesWithinRange(x1Edges.GetVal(i), x1);
-            spriteCollisionsX[i].AddRange(newXCollisions);
             x1Edges.Update(i, x1);
-
-            ///Check for collision
-            var newYCollisions = y0Edges.SpritesWithinRange(y1Edges.GetVal(i), y1);
-            spriteCollisionsY[i].AddRange(newYCollisions);
+            y0Edges.Update(i, y0);
             y1Edges.Update(i, y1);
 
             var union = spriteCollisionsX[i].Overlap(spriteCollisionsY[i]);
             if (union.Count() > 0) {
-
+                return collisionType(i, union.First());
             }
+            return GameInstance.CollisionType.none;
+        }
+
+        public GameInstance.CollisionType Update(int i, double x0, double y0, double x1, double y1) {
+            if (!knownIndices.Contains(i)) {
+                spriteCollisionsX[i] = getXIntersectingSprites(x0, x1);
+                spriteCollisionsX[i].Remove(i);
+                spriteCollisionsY[i] = getYIntersectingSprites(y0, y1);
+                spriteCollisionsY[i].Remove(i);
+                knownIndices.Add(i);
+                x0Edges.Add(i, x0);
+                y0Edges.Add(i, y0);
+                x1Edges.Add(i, x1);
+                y1Edges.Add(i, y1);
+            }
+
+            var dx = x0Edges.GetVal(i) - x0;
+            var dy = y0Edges.GetVal(i) - y0;
+            
+            List<int> toAdd, toRemove;
+            if (dx < 0) {
+                ///lost collisions in x
+                toAdd = x1Edges.SpritesWithinRange(x0Edges.GetVal(i), x0);
+                addXcollisions(i, toAdd);
+
+                toRemove = x0Edges.SpritesWithinRange(x1Edges.GetVal(i), x1);
+                removeXcollisions(i, toRemove);
+            } else {
+                toAdd = x0Edges.SpritesWithinRange(x1Edges.GetVal(i), x1);
+                addXcollisions(i, toAdd);
+
+                toRemove = x1Edges.SpritesWithinRange(x0Edges.GetVal(i), x0);
+                removeXcollisions(i, toRemove);
+            }
+
+            x0Edges.Update(i, x0);
+            x1Edges.Update(i, x1);
+
+            if (dy < 0) {
+                toRemove = y1Edges.SpritesWithinRange(y0Edges.GetVal(i), y0);
+                removeYcollisions(i, toRemove);
+
+                toAdd = y0Edges.SpritesWithinRange(y1Edges.GetVal(i), y1);
+                addYcollisions(i, toAdd);
+            } else {
+                toRemove = y0Edges.SpritesWithinRange(y1Edges.GetVal(i), y1);
+                removeYcollisions(i, toRemove);
+
+                toAdd = y1Edges.SpritesWithinRange(y0Edges.GetVal(i), y0);
+                addYcollisions(i, toAdd);
+            }
+            
+            y0Edges.Update(i, y0);
+            y1Edges.Update(i, y1);
+
+            //Debug.Print("X coll: " + spriteCollisionsX[i].Count().ToString());
+            //Debug.Print("Y coll: " + spriteCollisionsY[i].Count().ToString());
+            var union = spriteCollisionsX[i].Overlap(spriteCollisionsY[i]);
+            if (union.Count() > 0) {
+                if (union.Count() > 1) {
+                    throw new Exception();
+                }
+                return collisionType(i, union.First());
+            }
+            return GameInstance.CollisionType.none;
         }
     }
 }

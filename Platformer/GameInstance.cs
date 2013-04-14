@@ -158,27 +158,20 @@ namespace Platformer {
                 s.RaiseOffTheBoard();
             }
             ///We want to get rid of this element wise test
-            collisionDetector.Update(s.CreationIndex, s.Left, s.Top, s.Right, s.Bottom);
             ///Test for collision
             if (s.IsSolid) {
-                
-                foreach (var s2 in this.allSprites) {
-                    continue;
-                    if (s.IsSolid && s != s2) {
-                        var obst = collision(s, s2);
-                        switch (obst) {
-                            case CollisionType.none:
-                                s2.State.ClearObstructions();
-                                break;
-                            case CollisionType.overlap:
-                                s.State.Freeze();
-                                s2.State.Freeze();
-                                break;
-                            default:
-                                s.State.AddObstruction(obst);
-                                break;
-                        }
-                    }
+                var obst = collisionDetector.Update_Slow(s.CreationIndex, s.Left, s.Top, s.Right, s.Bottom);
+                switch (obst) {
+                    case CollisionType.none:
+                        s.State.ClearObstructions();
+                        break;
+                    case CollisionType.overlap:
+                        s.State.Freeze();
+                        //s2.State.Freeze();
+                        break;
+                    default:
+                        s.State.AddObstruction(obst);
+                        break;
                 }
             }
         }
