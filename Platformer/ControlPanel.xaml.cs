@@ -96,5 +96,11 @@ namespace Platformer {
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
             MainWindow.Close();
         }
+
+        private void SetBackground_Click_1(object sender, RoutedEventArgs e) {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.ShowDialog();
+            GameInstance.Inst.BackgroundImage = ofd.FileName;
+        }
     }
 }

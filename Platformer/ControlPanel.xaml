@@ -10,6 +10,7 @@
                 <Button Click="Start_Click" Width="100" HorizontalAlignment="Left" Margin="5">Start</Button>
                 <Button Click="Save_Click" Width="100" HorizontalAlignment="Left" Margin="5">Save</Button>
                 <Button Click="Open_Click"  Width="100" HorizontalAlignment="Left" Margin="5">Open</Button>
+                <Button Click="SetBackground_Click_1"  Width="100" HorizontalAlignment="Left" Margin="5">Set Background</Button>
             </StackPanel>
         </StackPanel>
         <StackPanel>

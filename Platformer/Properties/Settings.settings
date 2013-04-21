@@ -5,5 +5,11 @@
     <Setting Name="LastFilepath" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="SaveDirectory" Type="System.String" Scope="User">
+      <Value Profile="(Default)">c:\platformer</Value>
+    </Setting>
+    <Setting Name="AutosaveFile" Type="System.String" Scope="User">
+      <Value Profile="(Default)">c:\platformer\autosave.asv.xml</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -224,10 +224,9 @@ namespace Platformer {
         public string BackgroundImage {
             get { return _BackgroundImage; }
             set {
-                if (_BackgroundImage != value) {
-                    _BackgroundImage = value;
-                    OnPropertyChanged(BackgroundImagePropertyName);
-                }
+                _BackgroundImage = value;
+                setBackgroundImage(value);
+                OnPropertyChanged(BackgroundImagePropertyName);
             }
         }
         private string _BackgroundImage;
@@ -244,15 +243,18 @@ namespace Platformer {
         }
         private Stopwatch _stopwatch;
         public const string stopwatchPropertyName = "stopwatch";
-        
+
+        private void setBackgroundImage(string filepath) {
+            var bi = new BitmapImage(new Uri(filepath));
+            this.GamePerspective.SetUniverseSize(bi.Width.Round(), bi.Height.Round());
+            this.BackgroundBrush = new ImageBrush(bi) { Stretch = Stretch.None };
+        }
 
         private void initializeBackground() {
             BackgroundImage = @"C:\Users\Amichai\Pictures\Borges.jpg";
             var bi = new BitmapImage(new Uri(BackgroundImage));
             this.BackgroundBrush = new ImageBrush(bi);
             this.BackgroundBrush = Brushes.LightGreen;
-
-            
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -263,7 +265,6 @@ namespace Platformer {
 
         public void SetBoardSize(int width, int height) {
             this.GamePerspective.SetScreenSize(width, height);
-            this.GamePerspective.SetUniverseSize(width, height);
         }
 
         public event EventHandler TimeStarted;
@@ -311,6 +312,7 @@ namespace Platformer {
         public XElement Serialize() {
             XElement root = new XElement("GameInstance");
             root.Add(new XAttribute("Name", this.Name));
+            root.Add(new XAttribute("BackgroundImage", this.BackgroundImage));
             root.Add(this.GamePerspective.Serialize());
             //root.Add(new XAttribute("Width", this.BoardWidth));
             //root.Add(new XAttribute("Height", this.BoardHeight));
@@ -324,6 +326,7 @@ namespace Platformer {
             ///Background image as well please
             var root = XElement.Load(filepath);
             this.Name = (string)root.Attribute("Name");
+            this.BackgroundImage = (string)root.Attribute("BackgroundImage");
             //this.BoardWidth = double.Parse((string)root.Attribute("Width"));
             //this.BoardHeight = double.Parse((string)root.Attribute("Height"));
             if (this.allSprites != null) {

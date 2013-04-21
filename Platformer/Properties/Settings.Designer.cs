@@ -34,5 +34,29 @@ namespace Platformer.Properties {
                 this["LastFilepath"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("c:\\platformer")]
+        public string SaveDirectory {
+            get {
+                return ((string)(this["SaveDirectory"]));
+            }
+            set {
+                this["SaveDirectory"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("c:\\platformer\\autosave.asv.xml")]
+        public string AutosaveFile {
+            get {
+                return ((string)(this["AutosaveFile"]));
+            }
+            set {
+                this["AutosaveFile"] = value;
+            }
+        }
     }
 }

@@ -75,5 +75,9 @@ namespace Platformer {
             }
             return toReturn;
         }
+
+        public static int Round(this double val){
+            return (int)Math.Round(val);
+        }
     }
 }

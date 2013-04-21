@@ -31,7 +31,11 @@ namespace Platformer {
             Instance.Reset();
             Instance.TimeStarted += Instance_TimeStarted;
             cp.NewGameLoaded += cp_NewGameLoaded;
+            openLastGame();
+        }
 
+        private void openLastGame() {
+            Instance.Deserialize(Properties.Settings.Default.AutosaveFile);
         }
 
         void cp_NewGameLoaded(object sender, EventArgs e) {
@@ -114,7 +118,14 @@ namespace Platformer {
             Application.Current.Shutdown();
         }
 
+        private void autosave() {
+            var game = this.Instance.Serialize();
+            var dir = Properties.Settings.Default.AutosaveFile;
+            game.Save(dir);
+        }
+
         private void Window_Closing(object sender, CancelEventArgs e) {
+            autosave();
             this.cp.Close();
             this.Instance.Close();
         }
